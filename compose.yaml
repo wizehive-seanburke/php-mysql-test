@@ -1,0 +1,52 @@
+services:
+    db:
+        container_name: db.local
+        image: mysql:5.7.44
+        command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
+        environment: &env
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_DATABASE=test
+            - MYSQL_USER=test
+            - MYSQL_PASSWORD=password
+        expose:
+            - 3306
+        volumes: &certs
+            - ./certs:/etc/certs
+    odb:
+        container_name: odb.local
+        image: mysql:5.7.43
+        command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
+        environment: *env
+        expose:
+            - 3306
+        volumes: *certs
+#    ndb:
+#        container_name: ndb.local
+#        image: mysql:8.0.33
+#        command: --default-authentication-plugin=mysql_native_password --sql_mode='NO_ENGINE_SUBSTITUTION' --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
+#        environment: *env
+#        expose:
+#            - 3306
+#        volumes: *certs
+    php5:
+        build:
+            dockerfile: php5.dockerfile
+            context: .
+        tty: true
+        stdin_open: true
+        links:
+            - db
+            - odb
+            - ndb
+        volumes: *certs
+    php7:
+        build:
+            dockerfile: php7.dockerfile
+            context: .
+        tty: true
+        stdin_open: true
+        links:
+            - db
+            - odb
+            - ndb
+        volumes: *certs
