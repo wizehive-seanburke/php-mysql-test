@@ -1,6 +1,6 @@
 services:
-    db:
-        container_name: db.local
+    mysql5744:
+        container_name: mysql5744.local
         image: mysql:5.7.44
         command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
         environment: &env
@@ -12,32 +12,41 @@ services:
             - 3306
         volumes: &certs
             - ./certs:/etc/certs
-    odb:
-        container_name: odb.local
+    mysql5743:
+        container_name: mysql5743.local
         image: mysql:5.7.43
         command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
         environment: *env
         expose:
             - 3306
         volumes: *certs
-#    ndb:
-#        container_name: ndb.local
-#        image: mysql:8.0.33
-#        command: --default-authentication-plugin=mysql_native_password --sql_mode='NO_ENGINE_SUBSTITUTION' --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem
-#        environment: *env
-#        expose:
-#            - 3306
-#        volumes: *certs
+    mysql8033:
+       container_name: mysql8033.local
+       image: mysql:8.0.33
+       command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem --default-authentication-plugin=mysql_native_password --sql_mode='NO_ENGINE_SUBSTITUTION'
+       environment: *env
+       expose:
+           - 3306
+       volumes: *certs
+    mysql8034:
+       container_name: mysql8034.local
+       image: mysql:8.0.36
+       command: --require_secure_transport=ON --ssl-ca=/etc/certs/root-ca.pem --ssl-cert=/etc/certs/server-cert.pem --ssl-key=/etc/certs/server-key.pem --default-authentication-plugin=mysql_native_password --sql_mode='NO_ENGINE_SUBSTITUTION'
+       environment: *env
+       expose:
+           - 3306
+       volumes: *certs
     php5:
         build:
             dockerfile: php5.dockerfile
             context: .
         tty: true
         stdin_open: true
-        links:
-            - db
-            - odb
-            - ndb
+        links: &links
+            - mysql5743
+            - mysql5744
+            - mysql8033
+            - mysql8034
         volumes: *certs
     php7:
         build:
@@ -45,8 +54,13 @@ services:
             context: .
         tty: true
         stdin_open: true
-        links:
-            - db
-            - odb
-            - ndb
+        links: *links
+        volumes: *certs
+    php7wh:
+        build:
+            dockerfile: php7wh.dockerfile
+            context: .
+        tty: true
+        stdin_open: true
+        links: *links
         volumes: *certs
